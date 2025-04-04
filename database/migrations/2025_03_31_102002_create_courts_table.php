@@ -21,6 +21,12 @@ return new class extends Migration {
             $table->foreignId('manager_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
+        Schema::create('court_equipments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('court_id')->constrained('courts')->cascadeOnDelete();
+            $table->enum('type', ['racket', 'ball']);
+            $table->timestamps();
+        });
         Schema::create('court_schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('court_id')->constrained('courts')->cascadeOnDelete();
