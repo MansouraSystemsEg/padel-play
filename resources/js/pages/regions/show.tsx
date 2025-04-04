@@ -1,6 +1,6 @@
 import { type BreadcrumbItem, type SharedData } from '@/types'
 import { Transition } from '@headlessui/react'
-import { router, Head, useForm } from '@inertiajs/react'
+import { router, Head, useForm, Link } from '@inertiajs/react'
 import { FormEventHandler } from 'react'
 
 import InputError from '@/components/input-error'
@@ -12,6 +12,9 @@ import AppLayout from '@/layouts/app-layout'
 import HeadingSmall from '@/components/heading-small'
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import { ArrowRight, DeleteIcon, Plus, PlusIcon } from 'lucide-react'
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,16 +23,31 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ]
 
+type User = {
+    id: number
+    name: string
+}
+
 type Region = {
+    id: number
+    name: string
+    parent_id: string | null
+    manager_id: string | null
+    courts: Court[]
+}
+
+type Court = {
     id: number
     name: string
 }
 
 type RegionForm = {
     name: string
+    parent_id: string | null
+    manager_id: string | null
 }
 
-export default function Region({ region }: { region?: Region }) {
+export default function Region({ region, regions, users }: { region?: Region, regions: Region[], users: User[] }) {
     const { data, setData, post, put, errors, processing, recentlySuccessful } = useForm<Partial<RegionForm>>(region)
 
     const submit: FormEventHandler = (e) => {
@@ -52,6 +70,39 @@ export default function Region({ region }: { region?: Region }) {
 
             <div className="px-4 py-6">
                 <div className="space-y-6">
+                    {region ? <>
+                        <HeadingSmall title={
+                            <div className="flex">
+                                Courts
+                                <Link className="ms-auto" href={`/dashboard/regions/${region.id}/courts/create`}>
+                                    <PlusIcon />
+                                </Link>
+                            </div>
+                        } />
+                        <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                            {region.courts.length === 0 ? <>
+                                <Link href={`/dashboard/regions/${region.id}/courts/create`}>
+                                    Add <Plus className="inline-block" />
+                                </Link>
+                            </> : null}
+                            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                                {region.courts.map((court) => {
+                                    return (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>
+                                                    <Link href={`/dashboard/courts/${court.id}/edit`}>
+                                                        {court.name} <ArrowRight className="inline-block" />
+                                                    </Link>
+                                                </CardTitle>
+                                            </CardHeader>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </> : null}
+
                     <HeadingSmall title="Region information" />
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
@@ -70,6 +121,56 @@ export default function Region({ region }: { region?: Region }) {
                             <InputError className="mt-2" message={errors.name} />
                         </div>
 
+                        <div className="grid gap-2">
+                            <Label htmlFor="parent_id">Parent</Label>
+
+                            <div className="flex">
+                                <Select onValueChange={(value) => setData('parent_id', value)} value={data.parent_id ? `${data.parent_id}` : undefined}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Region" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {regions.map((r) => {
+                                            return (
+                                                <SelectItem key={r.id} value={`${r.id}`}>{r.name}</SelectItem>
+                                            )
+                                        })}
+                                    </SelectContent>
+                                </Select>
+
+                                {data.parent_id ? <Button variant="link" onClick={() => setData('parent_id', null)}>
+                                    <DeleteIcon />
+                                </Button> : null}
+                            </div>
+
+                            <InputError className="mt-2" message={errors.parent_id} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="manager_id">Manager</Label>
+
+                            <div className="flex">
+                                <Select onValueChange={(value) => setData('manager_id', value)} value={data.manager_id ? `${data.manager_id}` : undefined}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Manager" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {users.map((user) => {
+                                            return (
+                                                <SelectItem key={user.id} value={`${user.id}`}>{user.name}</SelectItem>
+                                            )
+                                        })}
+                                    </SelectContent>
+                                </Select>
+
+                                {data.manager_id ? <Button variant="link" onClick={() => setData('manager_id', null)}>
+                                    <DeleteIcon />
+                                </Button> : null}
+                            </div>
+
+                            <InputError className="mt-2" message={errors.manager_id} />
+                        </div>
+
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>Save</Button>
 
@@ -84,6 +185,7 @@ export default function Region({ region }: { region?: Region }) {
                             </Transition>
                         </div>
                     </form>
+
                     {region && <DeleteRegion region={region} />}
                 </div>
             </div>

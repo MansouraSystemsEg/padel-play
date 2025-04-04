@@ -1,11 +1,10 @@
 import AppLayout from '@/layouts/app-layout'
 import { type BreadcrumbItem } from '@/types'
 import { Head, Link } from '@inertiajs/react'
-import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import FloatingActionMenu from '@/components/floating-action-menu'
 import { ArrowRight, Plus } from 'lucide-react'
 import { router } from '@inertiajs/react'
-import { Button } from '@/components/ui/button'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -17,6 +16,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 type Region = {
     id: number,
     name: string,
+    manager?: { id: number, name: string }
+    children: Region[],
 }
 
 export default function Regions({ regions }: { regions: Region[] }) {
@@ -34,19 +35,33 @@ export default function Regions({ regions }: { regions: Region[] }) {
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     {regions.map((region) => {
                         return (
-                            <Card>
+                            <Card key={region.id} className="col-span-3">
                                 <CardHeader>
                                     <CardTitle>
-                                        <Link href={`/dashboard/regions/${region.id}/edit`}>
-                                            {region.name} <ArrowRight className="inline-block" />
-                                        </Link>
+                                        <Row region={region} />
                                     </CardTitle>
                                 </CardHeader>
+                                <CardContent className="flex flex-col gap-2">
+                                    {region.children.map((region) => {
+                                        return (
+                                            <Row key={region.id} region={region} />
+                                        )
+                                    })}
+                                </CardContent>
                             </Card>
                         )
                     })}
                 </div>
             </div>
         </AppLayout>
+    )
+}
+
+function Row({ region }: { region: Region }) {
+    return (
+        <Link href={`/dashboard/regions/${region.id}/edit`} className="flex gap-4">
+            {region.name}
+            <ArrowRight className="ms-auto inline-block" />
+        </Link>
     )
 }

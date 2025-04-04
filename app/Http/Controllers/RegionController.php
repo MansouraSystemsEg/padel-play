@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Regions\RegionCreateRequest;
 use App\Http\Requests\Regions\RegionUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -14,7 +15,9 @@ class RegionController extends Controller
 {
     public function index(): Response
     {
-        $regions = Region::all();
+        $regions = Region::whereNull('parent_id')
+            ->with('children')
+            ->get();
 
         return Inertia::render('regions/index', [
             'regions' => $regions,
@@ -23,7 +26,13 @@ class RegionController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('regions/show');
+        $regions = Region::whereNull('parent_id')->get();
+        $users = User::all();
+
+        return Inertia::render('regions/show', [
+            'regions' => $regions,
+            'users' => $users,
+        ]);
     }
 
     public function store(RegionCreateRequest $request): RedirectResponse
@@ -37,10 +46,16 @@ class RegionController extends Controller
 
     public function edit(int $id): Response
     {
-        $region = Region::findOrFail($id);
+        $region = Region::with('courts')->findOrFail($id);
+        $regions = Region::whereNull('parent_id')
+            ->whereNot('id', $id)
+            ->get();
+        $users = User::all();
 
         return Inertia::render('regions/show', [
             'region' => $region,
+            'regions' => $regions,
+            'users' => $users,
         ]);
     }
 

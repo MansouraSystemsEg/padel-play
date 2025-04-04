@@ -19,7 +19,7 @@ return new class extends Migration {
         Schema::create('coach_schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('coach_id')->constrained('coaches')->cascadeOnDelete();
-            $table->enum('weekday', ['sat', 'sun', 'mon', 'tue', 'wed', 'thr', 'fri']);
+            $table->enum('weekday', ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri']);
             $table->time('starts_at');
             $table->time('ends_at');
             $table->timestamps();

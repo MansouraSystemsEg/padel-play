@@ -12,8 +12,8 @@ import AppLayout from '@/layouts/app-layout'
 import HeadingSmall from '@/components/heading-small'
 
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
-import { SelectTrigger } from '@radix-ui/react-select'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import { DeleteIcon } from 'lucide-react'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -21,6 +21,11 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard/courts',
     },
 ]
+
+type User = {
+    id: number
+    name: string
+}
 
 type Region = {
     id: number
@@ -31,15 +36,20 @@ type Court = {
     id: number
     name: string
     region_id: string
+    manager_id: string | undefined
 }
 
 type CourtForm = {
     name: string
-    region_id: string
+    region_id: string | undefined
+    manager_id: string | undefined
 }
 
-export default function Court({ court, regions }: { court?: Court, regions: Region[] }) {
-    const { data, setData, post, put, errors, processing, recentlySuccessful } = useForm<Partial<CourtForm>>(court)
+export default function Court({ court, regions, regionID, users }: { court?: Court, regions: Region[], regionID?: string, users: User[] }) {
+    const { data, setData, post, put, errors, processing, recentlySuccessful } = useForm<Partial<CourtForm>>({
+        region_id: regionID,
+        ...court,
+    })
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault()
@@ -82,7 +92,7 @@ export default function Court({ court, regions }: { court?: Court, regions: Regi
                         <div className="grid gap-2">
                             <Label htmlFor="name">Region</Label>
 
-                            <Select onValueChange={(value) => setData('region_id', value)} defaultValue={court ? `${court?.region_id}` : undefined}>
+                            <Select onValueChange={(value) => setData('region_id', value)} value={regionID ? `${regionID}` : court ? `${court?.region_id}` : undefined}>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Region" />
                                 </SelectTrigger>
@@ -96,6 +106,31 @@ export default function Court({ court, regions }: { court?: Court, regions: Regi
                             </Select>
 
                             <InputError className="mt-2" message={errors.name} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="manager_id">Manager</Label>
+
+                            <div className="flex">
+                                <Select onValueChange={(value) => setData('manager_id', value)} value={data.manager_id ? `${data.manager_id}` : undefined}>
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="Manager" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {users.map((user) => {
+                                            return (
+                                                <SelectItem key={user.id} value={`${user.id}`}>{user.name}</SelectItem>
+                                            )
+                                        })}
+                                    </SelectContent>
+                                </Select>
+
+                                {data.manager_id ? <Button variant="link" onClick={() => setData('manager_id', undefined)}>
+                                    <DeleteIcon />
+                                </Button> : null}
+                            </div>
+
+                            <InputError className="mt-2" message={errors.manager_id} />
                         </div>
 
                         <div className="flex items-center gap-4">

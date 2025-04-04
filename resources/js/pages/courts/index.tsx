@@ -1,10 +1,19 @@
 import AppLayout from '@/layouts/app-layout'
 import { type BreadcrumbItem } from '@/types'
 import { Head, Link } from '@inertiajs/react'
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import FloatingActionMenu from '@/components/floating-action-menu'
 import { ArrowRight, Plus } from 'lucide-react'
 import { router } from '@inertiajs/react'
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,9 +25,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 type Court = {
     id: number,
     name: string,
+    region: { name: string, parent: { name: string } },
 }
 
-export default function Courts({ courts }: { courts: Court[] }) {
+export default function Courts({ courts, currentPage, nextPageUrl, prevPageUrl }: { courts: Court[], currentPage: number, nextPageUrl: string, prevPageUrl: string }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Courts" />
@@ -40,11 +50,27 @@ export default function Courts({ courts }: { courts: Court[] }) {
                                             {court.name} <ArrowRight className="inline-block" />
                                         </Link>
                                     </CardTitle>
+                                    <CardDescription>
+                                        {court.region.name} - {court.region.parent.name}
+                                    </CardDescription>
                                 </CardHeader>
                             </Card>
                         )
                     })}
                 </div>
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious except={[]} href={prevPageUrl} />
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationLink except={[]} href="#">{currentPage}</PaginationLink>
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationNext except={[]} href={nextPageUrl} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             </div>
         </AppLayout>
     )

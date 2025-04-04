@@ -10,23 +10,32 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Court;
 use App\Models\Region;
+use App\Models\User;
 
 class CourtController extends Controller
 {
     public function index(): Response
     {
-        $courts = Court::all();
+        $per_page = request()->input('per_page', default: 30);
+        $courts = Court::with('region.parent')->paginate($per_page);
 
         return Inertia::render('courts/index', [
-            'courts' => $courts,
+            'courts' => $courts->items(),
+            'currentPage' => $courts->currentPage(),
+            'nextPageUrl' => $courts->nextPageUrl(),
+            'prevPageUrl' => $courts->previousPageUrl(),
         ]);
     }
 
-    public function create(): Response
+    public function create(int|null $id): Response
     {
         $regions = Region::all();
+        $users = User::all();
+
         return Inertia::render('courts/show', [
             'regions' => $regions,
+            'regionID' => $id,
+            'users' => $users,
         ]);
     }
 
@@ -43,10 +52,12 @@ class CourtController extends Controller
     {
         $regions = Region::all();
         $court = Court::findOrFail($id);
+        $users = User::all();
 
         return Inertia::render('courts/show', [
             'court' => $court,
             'regions' => $regions,
+            'users' => $users,
         ]);
     }
 
