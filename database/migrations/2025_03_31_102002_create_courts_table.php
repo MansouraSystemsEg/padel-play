@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->text('address');
             $table->string('latitude');
             $table->string('longitude');
+            $table->unsignedSmallInteger('minimum_booking_minutes');
             $table->unsignedSmallInteger('maximum_simultanious_bookings');
             $table->foreignId('region_id')->constrained('regions')->cascadeOnDelete();
             $table->foreignId('manager_id')->nullable()->constrained('users')->cascadeOnDelete();
@@ -39,6 +40,7 @@ return new class extends Migration {
             $table->enum('day', ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri']);
             $table->time('opens_at');
             $table->time('closes_at');
+            $table->float('hourly_price');
             $table->timestamps();
         });
         Schema::create('court_breaks', function (Blueprint $table) {
