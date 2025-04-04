@@ -30,7 +30,7 @@ return new class extends Migration {
         Schema::create('court_amenities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('court_id')->constrained('courts')->cascadeOnDelete();
-            $table->enum('type', ['parking', 'store', 'seating', 'cafe', 'changing_rooms', 'toilets']);
+            $table->enum('type', ['parking', 'ceiling', 'store', 'seating', 'cafe', 'changing_rooms', 'toilets']);
             $table->timestamps();
         });
         Schema::create('court_schedules', function (Blueprint $table) {
